@@ -1,44 +1,77 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const app = express();
-
+const express=require("express");
+const mongoose =require("mongoose");
+const app=express();
 app.use(express.json());
+mongoose.connect("mongodb://127.0.0.1:27017/studentdb").then(()=>{
+  console.log("mongodb is connected");
+}).catch((error)=>{
+console.log("mongodb not connected");
+console.log(error);
+})
+const studentSchema=new mongoose.Schema({
+  name:String,
+  age:Number,
+  email:String
+});
+const Student=mongoose.model("student",studentSchema);
+app.post("/students",async(req,res)=>{
+  const student =new Student(req.body);
+  await student.save();
+  res.json(student);
+})
+app.get("/students",async(req,res)=>{
+  const students=await Student.find();
+  res.json(students);
+})
+app.get("/students/:id",async(req,res)=>{
+  try{
+    const student= await Student.findById(req.params.id);
+    if(!student){
+     return res.status(404).json({message:"sydent not found"});
 
-mongoose.connect("mongodb://127.0.0.1:27017/studentdb")
-  .then(() => {
-    console.log("MongoDB Connected Successfully");
+    }
+    res.json(student);
+  }catch(error){
+    console.log("error found");
+    
+  res.status(500).json({error:error.message})
+}
+})
+
+
+app.put("/students/:id",async(req,res)=>{
+try{
+  const student = await Student.findByIdAndUpdate(
+  req.params.id,
+  req.body,{new:true}
+);
+if(!student){
+  return res.status(404).json({
+    message:"stident not found"
   })
-  .catch((error) => {
-    console.log(error);
-  });
+}
+res.json({message:"Student updated",student});
+}catch(error){
+res.status(400).json({message:error.message});
+}});
 
-const studentSchema = new mongoose.Schema({
-  name: String,
-  age: Number,
-  email: String
-});
-
-const Student = mongoose.model("Student", studentSchema);
-
-app.post("/students", async (req, res) => {
-  try {
-    const student = new Student(req.body);
-    await student.save();
-    res.json({ message: "Student created", student });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+app.delete("/students/:id",async(req,res)=>{
+  try{
+     const sudent =await Student.findByIdAndDelete(
+    req.params.id,
+  )
+  if (!student){
+    return res.status(404).json({message:"student not found"})
   }
-});
+  res.json({message:"student delleted",student});
 
-app.get("/students", async (req, res) => {
-  try {
-    const students = await Student.find();
-    res.json(students);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+
+  }catch(error){
+    res.status(500).json({error:error.message})
   }
-});
-
-app.listen(3000, () => {
-  console.log("Server running on http://localhost:3000");
-});
+ 
+})
+app.listen(3000,()=>{
+  console.log("llistening in port 3000...");
+  
+})
