@@ -2,7 +2,7 @@ const express=require("express");
 const mongoose =require("mongoose");
 const app=express();
 app.use(express.json());
-mongoose.connect("mongodb://127.0.0.1:27017/studentdb").then(()=>{
+mongoose.connect("mongodb+srv://Nigus:12345@cluster0.wgbwipa.mongodb.net/?appName=Cluster0").then(()=>{
   console.log("mongodb is connected");
 }).catch((error)=>{
 console.log("mongodb not connected");
@@ -57,7 +57,7 @@ res.status(400).json({message:error.message});
 
 app.delete("/students/:id",async(req,res)=>{
   try{
-     const sudent =await Student.findByIdAndDelete(
+     const student =await Student.findByIdAndDelete(
     req.params.id,
   )
   if (!student){
